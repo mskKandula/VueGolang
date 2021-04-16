@@ -16,7 +16,32 @@ export default {
       return {
      data12 :[]
       }
-   }
+   },
+   created() {
+  var loc = window.location;
+        var uri = 'ws:';
+
+        if (loc.protocol === 'https:') {
+          uri = 'wss:';
+        }
+        uri += '//' + loc.host;
+        uri += loc.pathname + 'ws';
+      
+        this.ws = new WebSocket(uri)
+
+        this.ws.onconnect = (evt) => {
+          console.log("ws connected", evt)
+        }
+        this.ws.onmessage = (evt) =>{
+
+          let x = JSON.parse(evt.data)
+         this.data12 = x.Intarr
+       
+        }
+        this.ws.onclose = (evt) => {
+          console.log("ws closed", evt)
+        }
+  }
  
 }
 </script>
