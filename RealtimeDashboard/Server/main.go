@@ -27,6 +27,7 @@ func reader(conn *websocket.Conn) {
 	for {
 		rand.Seed(time.Now().UnixNano())
      
+		// if not struct, it sends as a string which will be difficult to parse at client end
 		i :=&IntegerArray{
 			
 			Intarr : rand.Perm(12),
