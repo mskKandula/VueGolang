@@ -6,6 +6,11 @@ import (
 	"syscall/js"
 )
 
+// Before running the program be sure to change some settings
+// set GOOS=js
+// set GOARCH=wasm
+// go build -o  ../../assets/json.wasm  command to execute for go wasm file
+
 func jsonWrapper() js.Func {
 	jsonFunc := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		if len(args) != 1 {
@@ -38,4 +43,5 @@ func prettyJson(input string) (string, error) {
 func main() {
 	fmt.Println("Go Web Assembly")
 	js.Global().Set("formatJSON", jsonWrapper())
+	<-make(chan struct{})
 }
