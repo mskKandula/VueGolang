@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -27,14 +26,16 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	hashedPassword := string(hash)
 
 	query, err := Db.Prepare("INSERT INTO USERS(name, age, email, phoneNo, password) VALUES(?,?,?,?,?)")
 	if err != nil {
-		log.Panic(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	query.Exec(user.Name, user.Age, user.Email, user.PhoneNo, hashedPassword)
 
@@ -52,7 +53,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		password   string
 	)
 
-	json.NewDecoder(r.Body).Decode(&validation)
+	err = json.NewDecoder(r.Body).Decode(&validation)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// if credentials[validation.Email] != validation.Password {
 
@@ -67,7 +72,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			w.WriteHeader(http.StatusUnauthorized)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 	}
@@ -79,7 +84,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	if err := bcrypt.CompareHashAndPassword([]byte(password), []byte(validation.Password)); err != nil {
 
-		w.WriteHeader(http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
@@ -87,7 +92,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		// If the structure of the body is wrong, return an HTTP error
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		http.Error(w, err.Error(), http.StatusMethodNotAllowed)
 		return
 	}
 
