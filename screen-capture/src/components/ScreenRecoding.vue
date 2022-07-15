@@ -14,6 +14,7 @@
         <button @click="stopStream"> Stop Screen Recording ❌ </button>
       </div>
   </div>
+  <video class="center" height="500px" controls autoplay id="video"></video>
    </div>
 </template>
 
@@ -23,10 +24,31 @@ export default {
     return {
       isRecording:false,
       canRecord: true,
+      videoTrack: null,
+      displayOptions: {
+        video: {
+          cursor: "always",
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100,
+        },
+      }
     }
  },
   methods: {
-    getStream() {
+   async getStream() {
+       navigator.mediaDevices
+        .getDisplayMedia(this.displayOptions)
+        .then((stream) => {
+          let video = document.getElementById("video");
+          video.srcObject = stream;
+         
+          this.videoTrack = stream.getVideoTracks()[0];
+        })
+
+        .catch((e) => console.log(e));
     },
     stopStream(){}
   }
