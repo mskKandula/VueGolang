@@ -14,6 +14,7 @@
         <button @click="stopStream"> Stop Screen Recording ❌ </button>
       </div>
   </div>
+   <canvas id="canvas" hidden></canvas>
   <video class="center" height="500px" controls autoplay id="video"></video>
    </div>
 </template>
@@ -35,7 +36,8 @@ export default {
           sampleRate: 44100,
         },
       },
-      videoData: []
+      videoData: [],
+      videoTrack:null
     }
  },
   methods: {
@@ -46,7 +48,7 @@ export default {
           let video = document.getElementById("video");
           video.srcObject = stream;
          
-          // this.videoTrack = stream.getVideoTracks()[0];
+          this.videoTrack = stream.getVideoTracks()[0];
 
           let mediaRecorder = new MediaRecorder(stream);
 
@@ -87,7 +89,38 @@ export default {
         window.URL.revokeObjectURL(url);
     },
     stopStream(){}
-  }
+  },
+   downloadImage() {
+      this.imageCapture = new ImageCapture(this.videoTrack);
+      this.imageCapture.grabFrame().then((bitmap) => {
+        // Stop sharing
+        // track.stop();
+        let canvas = document.getElementById("canvas");
+        // Draw the bitmap to canvas
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        canvas.getContext("2d").drawImage(bitmap, 0, 0);
+
+        // Grab blob from canvas
+        canvas.toBlob((blob) => {
+          // Do things with blob here
+          blob.name = `screenshot-${new Date().getTime()}`;
+          var image = document.createElement("img");
+          image.setAttribute(
+  'style',
+  'width: 150px; height: 150px;',
+);
+          
+          // image.height="15px"
+          let url = window.URL.createObjectURL(blob);
+          image.src = url;
+
+document.body.appendChild(image)
+          // a.download = blob.name;
+          // a.click();
+        });
+      });
+    },
 }
 </script>
 
