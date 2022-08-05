@@ -69,7 +69,27 @@ export default {
         })
 
         .catch((e) => console.log(e));
-    }
+    },
+  },
+  created() {
+    const url = new URL("ws://localhost:8082/ws");
+
+    this.ws = new WebSocket(url.href);
+
+    this.ws.onconnect = (evt) => {
+      console.log("ws connected", evt);
+    };
+
+    this.ws.onclose = (evt) => {
+      console.log("ws closed", evt);
+    };
+
+    this.ws.onmessage = (evt) => {
+      let data = evt.data;
+
+      console.log("96", data);
+    };
+  },
 };
 </script>
 
