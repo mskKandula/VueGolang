@@ -70,6 +70,12 @@ export default {
 
         .catch((e) => console.log(e));
     },
+    clearData() {
+      this.videoData = [];
+      document.body.removeChild(this.a);
+      window.URL.revokeObjectURL(this.url);
+    },
+    stopStream() {},
   },
   created() {
     const url = new URL("ws://localhost:8082/ws");
