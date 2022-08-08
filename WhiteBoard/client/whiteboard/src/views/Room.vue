@@ -12,10 +12,11 @@
     <div id="bar">
       <div class="bar-item">
         <router-link to="/">home</router-link>|
-        <a href="https://github.com/mskKandula/VueGolang/tree/main/WhiteBoard">github</a>|
+        <a href="https://github.com/mskKandula/VueGolang/tree/main/WhiteBoard"
+          >github</a
+        >|
         <button @click="clearCanvas">clear</button>
       </div>
-      <div class="bar-item">status : {{ connection }}</div>
     </div>
   </div>
 </template>
@@ -25,13 +26,12 @@ export default {
   name: "Room",
   data() {
     return {
-      socket: null,
+      socketConn: null,
       x: 0,
       y: 0,
       canvasWidth: 0,
       canvasHeight: 0,
       isDrawing: false,
-      connection: "connecting"
     };
   },
   methods: {
@@ -61,7 +61,13 @@ export default {
       if (this.isDrawing) {
         this.drawLine(this.x, this.y, e.offsetX, e.offsetY);
         this.isDrawing = false;
-        this.socket.emit("drawing", this.$refs.canvas.toDataURL("image/png"));
+        this.socketConn.send(
+          JSON.stringify({
+            type: 1,
+            body: this.$refs.canvas.toDataURL("image/png"),
+            id: "drawing",
+          })
+        );
       }
     },
     cancelDrawing() {
@@ -81,24 +87,43 @@ export default {
       this.canvasHeight = window.innerHeight - 25;
       this.drawUpdate(state);
     },
-    setConnected() {
-      this.connection = "connected";
-    },
+
     clearCanvas() {
       let ctx = this.$refs.canvas.getContext("2d");
       ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-      this.socket.emit("drawing", this.$refs.canvas.toDataURL("image/png"));
-    }
+
+      this.socketConn.send(
+        JSON.stringify({
+          type: 1,
+          body: this.$refs.canvas.toDataURL("image/png"),
+          id: "drawing",
+        })
+      );
+    },
   },
   mounted() {
-    const io = require("socket.io-client");
-    this.socket = io("http://localhost:3000");
-    this.socket.emit("join-room", this.$route.params.id);
-    this.socket.on("drawing", this.drawUpdate);
-    this.socket.on("joined", this.setConnected);
+    const url = new URL("ws://localhost:8082/ws");
+
+    this.socketConn = new WebSocket(url.href);
+
+    this.socketConn.onconnect = (evt) => {
+      console.log("ws connected", evt);
+    };
+
+    this.socketConn.onmessage = (evt) => {
+      let data = evt.data;
+
+      data = data.split(/\r?\n/);
+
+      console.log("104", JSON.parse(data[0]).body);
+
+      this.drawUpdate(JSON.parse(data[0]).body);
+      data = "";
+    };
+
     this.handleResize();
     window.addEventListener("resize", this.handleResize);
-  }
+  },
 };
 </script>
 
