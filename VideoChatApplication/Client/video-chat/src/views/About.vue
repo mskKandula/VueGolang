@@ -9,7 +9,13 @@
 export default {
   name: "About",
   data() {
-    return {};
+    return {
+      userVideo: null,
+      userStream: null,
+      webSocketRef: null,
+      peerRef: null,
+      partnerVideo: null,
+    };
   },
   methods: {
     async openCamera() {
@@ -32,10 +38,40 @@ export default {
     },
     useEffect() {
       this.openCamera().then((stream) => {
+         this.userVideo = stream;
+        this.userStream = stream;
         const localVideo = document.getElementById("userVideo");
         localVideo.srcObject = stream;
+        let url = new URL(
+          `ws://10.4.0.30:8000/join?roomId=${this.$route.params.roomId}`
+        );
+
+        this.webSocketRef = new WebSocket(url.href);
+
+        this.webSocketRef.onopen = () => {
+          this.webSocketRef.send(JSON.stringify({ join: true }));
+        };
+
+        this.webSocketRef.onmessage = async (e) => {
+          const message = JSON.parse(e.data);
+
+          if (message.join) {
+            this.callUser();
+          }
+
+          if (message.offer) {
+            this.handleOffer(message.offer);
+          }
+
       });
     },
+      callUser() {
+      console.log("Calling Other User");
+     },
+      handleOffer(offer) {
+        console.log(offer)
+      console.log("Received Offer, Creating Answer");
+     }
   },
   created() {
     this.useEffect();
