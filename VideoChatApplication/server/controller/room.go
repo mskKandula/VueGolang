@@ -38,3 +38,29 @@ func (r *Room) RoomCreation() string {
 
 	return roomId
 }
+
+// Insertion of participants into room
+func (r *Room) InsertIntoRoom(roomId string, conn *websocket.Conn, host bool) {
+
+	r.Mutex.Lock()
+	defer r.Mutex.Unlock()
+	if _, ok := r.Users[roomId]; !ok {
+		return
+	}
+
+	participant := Participant{conn, host}
+
+	r.Users[roomId] = append(r.Users[roomId], participant)
+
+}
+
+// Deletion of room
+func (r *Room) DeleteRoom(roomId string) {
+	r.Mutex.Lock()
+	defer r.Mutex.Unlock()
+	if _, ok := r.Users[roomId]; !ok {
+		return
+	}
+
+	delete(r.Users, roomId)
+}
