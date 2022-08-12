@@ -67,10 +67,30 @@ export default {
     },
       callUser() {
       console.log("Calling Other User");
+      this.peerRef = await this.createPeer();
+
+      this.userStream.getTracks().forEach((track) => {
+        this.peerRef.addTrack(track, this.userStream);
+      });
      },
       handleOffer(offer) {
-        console.log(offer)
-      console.log("Received Offer, Creating Answer");
+        console.log("Received Offer, Creating Answer");
+      this.peerRef = await this.createPeer();
+
+      await this.peerRef.setRemoteDescription(
+        new RTCSessionDescription(offer)
+      );
+
+      this.userStream.getTracks().forEach((track) => {
+        this.peerRef.addTrack(track, this.userStream);
+      });
+
+      const answer = await this.peerRef.createAnswer();
+      await this.peerRef.setLocalDescription(answer);
+
+      this.webSocketRef.send(
+        JSON.stringify({ answer: this.peerRef.localDescription })
+      );
      }
   },
   created() {
