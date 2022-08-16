@@ -91,7 +91,40 @@ export default {
       this.webSocketRef.send(
         JSON.stringify({ answer: this.peerRef.localDescription })
       );
-     }
+     },
+      createPeer() {
+       return new Promise((resolve) => {
+      console.log("Creating Peer Connection");
+       const peer = new RTCPeerConnection({
+        iceServers: [
+          {
+            urls: [
+              "stun:stun.l.google.com:19302",
+              "stun:stun2.l.google.com:19302",
+            ],
+          },
+        ],
+      });
+      peer.onnegotiationneeded = this.handleNegotiationNeeded;
+      peer.onicecandidate = this.handleIceCandidateEvent;
+      peer.ontrack = this.handleTrackEvent;
+      resolve(peer)})
+    },
+    async handleNegotiationNeeded() {
+      console.log("Creating Offer",);
+
+      try {
+        const myOffer = await this.peerRef.createOffer();
+
+         await this.peerRef.setLocalDescription(myOffer);
+console.log("139",this.peerRef.localDescription)
+        this.webSocketRef.send(
+          JSON.stringify({ offer: this.peerRef.localDescription })
+        );
+      } catch (err) {
+        console.log("136", err);
+      }
+    },
   },
   created() {
     this.useEffect();
