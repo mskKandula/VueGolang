@@ -125,6 +125,19 @@ console.log("139",this.peerRef.localDescription)
         console.log("136", err);
       }
     },
+     handleIceCandidateEvent(e) {
+      console.log("Found Ice Candidate");
+      if (e.candidate) {
+        console.log("142", e.candidate);
+        this.webSocketRef.send(JSON.stringify({ iceCandidate: e.candidate }));
+      }
+    },
+    handleTrackEvent(e) {
+      console.log("Received Tracks", e);
+       const remoteVideo = document.getElementById("partnerVideo");
+        remoteVideo.srcObject = e.streams[0];
+      // this.partnerVideo = e.streams[0];
+    },
   },
   created() {
     this.useEffect();
