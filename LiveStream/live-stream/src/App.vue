@@ -1,16 +1,16 @@
 <template>
   <div id="app">
-    <LiveStreaming />
+    <Test />
   </div>
 </template>
 
 <script>
-import LiveStreaming from "./components/LiveStreaming.vue";
+import Test from "./components/Test.vue";
 
 export default {
   name: "App",
   components: {
-    LiveStreaming,
+    Test,
   },
 };
 </script>
